@@ -26,5 +26,9 @@ create database imdbcopycat;
 grant all privileges on database imdbcopycat to postgres;
 ```
 
+Run app in dev mode:
+```
+sbt run
+```
 
 
