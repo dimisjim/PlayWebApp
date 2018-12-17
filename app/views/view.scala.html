@@ -1,0 +1,19 @@
+@(tconst: String, viewForm: Form[Title], companies : Seq[(String, String)])(implicit requestHeader: MessagesRequestHeader)
+
+@import views.html.helper._
+
+@main {
+
+<h1>View Title</h1>
+
+
+<fieldset>
+
+    @CSRF.formField
+    @inputText(viewForm("name"), '_label -> "Computer name", '_help -> "")
+    @inputText(viewForm("introduced"), '_label -> "Introduced date", '_help -> "")
+    @inputText(viewForm("discontinued"), '_label -> "Discontinued date", '_help -> "")
+
+</fieldset>
+
+}

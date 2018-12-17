@@ -39,11 +39,45 @@ class HomeController @Inject()(titleService: TitleRepository,
     *
     * @param page    Current page number (starts from 0)
     * @param orderBy Column to be sorted
-    * @param filter  Filter applied on primary title entries
+    * @param filterPrimary  Filter applied on primary title entries
+    * @param filterOriginal  Filter applied on original title entries
     */
-  def list(page: Int, orderBy: Int, filter: String) = Action.async { implicit request =>
-    titleService.list(page = page, orderBy = orderBy, filter = ("%" + filter + "%")).map { page =>
-      Ok(html.list(page, orderBy, filter))
+  def list(page: Int, orderBy: Int, filterPrimary: String, filterOriginal: String) = Action.async { implicit request =>
+    titleService.list(page = page, orderBy = orderBy, filterPrimary = ("%" + filterPrimary + "%"), filterOriginal = ("%" + filterOriginal + "%")).map { page =>
+      Ok(html.list(page, orderBy, filterPrimary, filterOriginal))
+    }
+  }
+
+  /**
+    * Describe the computer form (used in both edit and create screens).
+    */
+  val titleForm = Form(
+    mapping(
+      "tconst" -> ignored(None: Option[String]),
+      "titleType" -> nonEmptyText,
+      "primaryTitle" -> nonEmptyText,
+      "originalTitle" -> nonEmptyText,
+      "titleType" -> nonEmptyText,
+      "startYear" -> nonEmptyText,
+      "endYear" -> ignored(None: Option[String]),
+      "runtimeMinutes" -> ignored(None: Option[String]),
+      "genres" -> nonEmptyText
+    )(Title.apply)(Title.unapply)
+  )
+
+  /**
+    * Display the 'view form' of a title.
+    *
+    * @param tconst unique identifier of the title
+    */
+  def view(tconst: String) = Action.async { implicit request =>
+    titleService.findById(tconst).flatMap {
+      case Some(title) =>
+        titleService.options.map { options =>
+          Ok(html.view(tconst, titleForm.fill(title), options))
+        }
+      case other =>
+        Future.successful(NotFound)
     }
   }
 }

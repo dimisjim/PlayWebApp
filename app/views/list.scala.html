@@ -1,4 +1,4 @@
-@(currentPage: Page2[Title], currentOrderBy: Int, currentFilter: String)(implicit request: MessagesRequestHeader)
+@(currentPage: Page2[Title], currentOrderBy: Int, currentPFilter: String, currentOFilter: String)(implicit request: MessagesRequestHeader)
 
 @import helper._
 
@@ -8,7 +8,7 @@
 @link(newPage: Int, newOrderBy: Option[Int] = None) = @{
     routes.HomeController.list(newPage, newOrderBy.map { orderBy =>
         if(orderBy == scala.math.abs(currentOrderBy)) -currentOrderBy else orderBy
-    }.getOrElse(currentOrderBy), currentFilter)
+    }.getOrElse(currentOrderBy), currentPFilter, currentOFilter)
 
 }
 
@@ -34,8 +34,13 @@
     <div id="actions">
 
         @form(action=routes.HomeController.list()) {
-            <input type="search" id="searchbox" name="f" value="@currentFilter" placeholder="Filter by title name...">
-            <input type="submit" id="searchsubmit" value="Filter by name" class="btn primary">
+            <input type="search" id="searchbox" name="f" value="@currentPFilter" placeholder="Filter by primary title name...">
+            <input type="submit" id="searchsubmit" value="Filter by primary title" class="btn primary">
+        }
+
+        @form(action=routes.HomeController.list()) {
+        <input type="search" id="searchbox" name="f" value="@currentOFilter" placeholder="Filter by original title name...">
+        <input type="submit" id="searchsubmit" value="Filter by original title" class="btn primary">
         }
 
     </div>
@@ -45,7 +50,7 @@
         <table class="computers zebra-striped">
             <thead>
                 <tr>
-                    @header(2, "Title")
+                    @header(2, "Primary Title")
                     @header(4, "Start Year")
                     @header(4, "End Year")
                     @header(3, "Type")
@@ -60,22 +65,22 @@
                     case title_basics => {
                         <tr>
                             <td>
-                                @title_basics.primaryTitle.getOrElse { <em>-</em> }
+                                <a href="@routes.HomeController.view(title_basics.tconst.get)">@title_basics.primaryTitle</a>
                             </td>
                             <td>
-                                @title_basics.startYear.getOrElse { <em>-</em> }
+                                @title_basics.startYear
                             </td>
                             <td>
-                                @title_basics.endYear.getOrElse { <em>-</em> }
+                                @title_basics.endYear
                             </td>
                             <td>
-                                @title_basics.titleType.getOrElse { <em>-</em> }
+                                @title_basics.titleType
                             </td>
                             <td>
-                                @title_basics.originalTitle.getOrElse { <em>-</em> }
+                                @title_basics.originalTitle
                             </td>
                             <td>
-                                @title_basics.genres.getOrElse { <em>-</em> }
+                                @title_basics.genres
                             </td>
                         </tr>
                     }

@@ -6,7 +6,10 @@
 GET     /                           controllers.HomeController.index
 
 # Primary Titles list (look at the default values for pagination parameters)
-GET     /titles                     controllers.HomeController.list(p:Int ?= 0, s:Int ?= 2, f ?= "")
+GET     /titles                     controllers.HomeController.list(p:Int ?= 0, s:Int ?= 2, f ?= "", f2 ?= "")
+
+# Edit existing computer
+GET     /titles/:tconst                 controllers.HomeController.view(tconst:String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
