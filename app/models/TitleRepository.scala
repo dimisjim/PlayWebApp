@@ -18,7 +18,7 @@ case class Title(tconst: Option[String],
                  startYear: String,
                  endYear: Option[String],
                  runtimeMinutes: Option[String],
-                 genres: String)
+                 genres: Option[String])
 
 object Title {
   implicit def toParameters: ToParameterList[Title] =
@@ -49,11 +49,11 @@ class TitleRepository @Inject()(dbapi: DBApi)(implicit ec: DatabaseExecutionCont
       get[String]("title_basics.titleType") ~
       get[String]("title_basics.primaryTitle") ~
       get[String]("title_basics.originalTitle") ~
-      get[String]("title_basics.titleType") ~
+      get[String]("title_basics.isAdult") ~
       get[String]("title_basics.startYear") ~
       get[Option[String]]("title_basics.endYear") ~
       get[Option[String]]("title_basics.runtimeMinutes") ~
-      get[String]("title_basics.genres")map {
+      get[Option[String]]("title_basics.genres")map {
       case tconst ~ titleType ~ primaryTitle ~ originalTitle ~ isAdult ~ startYear ~ endYear ~ runtimeMinutes ~ genres =>
         Title(tconst, titleType, primaryTitle, originalTitle, isAdult, startYear, endYear, runtimeMinutes, genres)
     }

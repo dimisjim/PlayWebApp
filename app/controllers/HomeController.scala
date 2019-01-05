@@ -54,7 +54,7 @@ class HomeController @Inject()(titleService: TitleRepository,
 
 
   /**
-    * Describe the computer form (used in both edit and create screens).
+    * Describe the computer form (used in view screen).
     */
   val titleForm = Form(
     mapping(
@@ -62,11 +62,11 @@ class HomeController @Inject()(titleService: TitleRepository,
       "titleType" -> nonEmptyText,
       "primaryTitle" -> nonEmptyText,
       "originalTitle" -> nonEmptyText,
-      "titleType" -> nonEmptyText,
+      "isAdult" -> nonEmptyText,
       "startYear" -> nonEmptyText,
-      "endYear" -> ignored(None: Option[String]),
-      "runtimeMinutes" -> ignored(None: Option[String]),
-      "genres" -> nonEmptyText
+      "endYear" -> optional(text),
+      "runtimeMinutes" -> optional(text),
+      "genres" -> optional(text)
     )(Title.apply)(Title.unapply)
   )
   println("peos",titleForm)
