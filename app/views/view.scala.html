@@ -1,4 +1,4 @@
-@(tconst: String, viewForm: Form[Title], companies : Seq[(String, String)])(implicit requestHeader: MessagesRequestHeader)
+@(tconst: String, titleForm: Form[Title], companies : Seq[(String, String)])(implicit requestHeader: MessagesRequestHeader)
 
 @import views.html.helper._
 
@@ -10,9 +10,13 @@
 <fieldset>
 
     @CSRF.formField
-    @inputText(viewForm("name"), '_label -> "Computer name", '_help -> "")
-    @inputText(viewForm("introduced"), '_label -> "Introduced date", '_help -> "")
-    @inputText(viewForm("discontinued"), '_label -> "Discontinued date", '_help -> "")
+    @inputText(titleForm("primaryTitle"), '_label -> "Primary Title", '_help -> "")
+    @inputText(titleForm("originalTitle"), '_label -> "Original Title", '_help -> "")
+    @inputText(titleForm("titleType"), '_label -> "Type", '_help -> "")
+    @inputText(titleForm("startYear"), '_label -> "Start Year", '_help -> "")
+    @inputText(titleForm("endYear"), '_label -> "End Year", '_help -> "")
+    @inputText(titleForm("runtimeMinutes"), '_label -> "Runtime Minutes", '_help -> "")
+    @inputText(titleForm("genres"), '_label -> "Genres", '_help -> "")
 
 </fieldset>
 

@@ -19,6 +19,8 @@ class HomeController @Inject()(titleService: TitleRepository,
   extends MessagesAbstractController(cc) {
 
   private val logger = play.api.Logger(this.getClass)
+  println("Hello, world!")
+  logger.trace("mpika mesa stin list tis main")
 
   /**
     * This result directly redirect to the application home.
@@ -44,9 +46,12 @@ class HomeController @Inject()(titleService: TitleRepository,
     */
   def list(page: Int, orderBy: Int, filterPrimary: String, filterOriginal: String) = Action.async { implicit request =>
     titleService.list(page = page, orderBy = orderBy, filterPrimary = ("%" + filterPrimary + "%"), filterOriginal = ("%" + filterOriginal + "%")).map { page =>
+      println("page",page)
+      logger.trace("mpika mesa stin list tis main")
       Ok(html.list(page, orderBy, filterPrimary, filterOriginal))
     }
   }
+
 
   /**
     * Describe the computer form (used in both edit and create screens).
@@ -64,6 +69,7 @@ class HomeController @Inject()(titleService: TitleRepository,
       "genres" -> nonEmptyText
     )(Title.apply)(Title.unapply)
   )
+  println("peos",titleForm)
 
   /**
     * Display the 'view form' of a title.
@@ -71,12 +77,16 @@ class HomeController @Inject()(titleService: TitleRepository,
     * @param tconst unique identifier of the title
     */
   def view(tconst: String) = Action.async { implicit request =>
+    println("mpika stin view")
     titleService.findById(tconst).flatMap {
       case Some(title) =>
-        titleService.options.map { options =>
+        println("mpika stin view 2")
+        titleService.options(tconst).map { options =>
+          println("mpika stin view 3")
           Ok(html.view(tconst, titleForm.fill(title), options))
         }
       case other =>
+        println("mpika stin view 4")
         Future.successful(NotFound)
     }
   }

@@ -36,6 +36,7 @@ case class Page2[A](items: Seq[A], page: Int, offset: Long, total: Long) {
 @javax.inject.Singleton
 class TitleRepository @Inject()(dbapi: DBApi)(implicit ec: DatabaseExecutionContext) {
 
+  private val logger = play.api.Logger(this.getClass)
   private val db = dbapi.database("default")
 
   // -- Parsers
@@ -78,11 +79,11 @@ class TitleRepository @Inject()(dbapi: DBApi)(implicit ec: DatabaseExecutionCont
     * @param filter Filter applied on the name column
     */
   def list(page: Int = 0, pageSize: Int = 10, orderBy: Int = 1, filterPrimary: String = "%", filterOriginal: String = "%"): Future[Page2[(Title)]] = Future {
-
+    logger.trace("mpika kai kanw query twra")
     val offset = pageSize * page
 
     db.withConnection { implicit connection =>
-
+      logger.trace("mpika kai kanw query twra")
       val titles = SQL"""
         select * from title_basics
         where title_basics.primaryTitle like ${filterPrimary}
@@ -90,11 +91,13 @@ class TitleRepository @Inject()(dbapi: DBApi)(implicit ec: DatabaseExecutionCont
         limit ${pageSize} offset ${offset}
       """.as(simple1.*)
 
+      println("title",titles)
+
       val totalRows = SQL"""
         select count(*) from title_basics
         where title_basics.primaryTitle like ${filterPrimary}
       """.as(scalar[Long].single)
-
+      println("totalRows",totalRows)
       Page2(titles, page, offset, totalRows)
     }
   }(ec)
@@ -106,9 +109,12 @@ class TitleRepository @Inject()(dbapi: DBApi)(implicit ec: DatabaseExecutionCont
     * Uses `SqlQueryResult.fold` from Anorm streaming,
     * to accumulate the rows as an options list.
     */
-  def options: Future[Seq[(String,String)]] = Future(db.withConnection { implicit connection =>
-    SQL"select * from title_basics order by primaryTitle".
+  def options(tconst: String): Future[Seq[(String,String)]] = Future(db.withConnection { implicit connection =>
+    println(tconst)
+    println("mpika stin options")
+    SQL"select * from title_basics where title_basics.tconst like ${tconst}".
       fold(Seq.empty[(String, String)], ColumnAliaser.empty) { (acc, row) => // Anorm streaming
+        println("mpika stin options fold")
         row.as(simple1) match {
           case Failure(parseErr) => {
             println(s"Fails to parse $row: $parseErr")
@@ -116,15 +122,24 @@ class TitleRepository @Inject()(dbapi: DBApi)(implicit ec: DatabaseExecutionCont
           }
 
           case Success(Title(Some(tconst), name, _, _, _, _, _, _, _)) =>
+            println("mpika stin options success")
             (tconst.toString -> name) +: acc
 
-          case Success(Title(None, _, _, _, _, _, _, _, _)) => acc
+          case Success(Title(None, _, _, _, _, _, _, _, _)) =>
+            println("mpika stin options success 2")
+            acc
         }
       }
   }).flatMap {
-    case Left(err :: _) => Future.failed(err)
-    case Left(_) => Future(Seq.empty)
-    case Right(acc) => Future.successful(acc.reverse)
+    case Left(err :: _) =>
+      println("mpika stin options flatmap 1")
+      Future.failed(err)
+    case Left(_) =>
+      println("mpika stin options flatmap 2")
+      Future(Seq.empty)
+    case Right(acc) =>
+      println("mpika stin options flatmap 3")
+      Future.successful(acc.reverse)
   }
 
 }
