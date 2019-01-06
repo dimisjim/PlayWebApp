@@ -1,4 +1,4 @@
-@(currentPage: Page2[Title], currentOrderBy: Int, currentPFilter: String, currentOFilter: String)(implicit request: MessagesRequestHeader)
+@(currentPage: Page[(Title, Option[Rating])], currentOrderBy: Int, currentPFilter: String, currentOFilter: String)(implicit request: MessagesRequestHeader)
 
 @import helper._
 
@@ -62,7 +62,7 @@
             <tbody>
 
                 @titles.map {
-                    case title_basics => {
+                    case (title_basics, title_ratings) => {
                         <tr>
                             <td>
                                 <a href="@routes.HomeController.view(title_basics.tconst.get)">@title_basics.primaryTitle</a>
@@ -71,7 +71,7 @@
                                 @title_basics.startYear
                             </td>
                             <td>
-                                @title_basics.endYear
+                                @title_basics.endYear.getOrElse { <em>-</em> }
                             </td>
                             <td>
                                 @title_basics.titleType
@@ -80,7 +80,10 @@
                                 @title_basics.originalTitle
                             </td>
                             <td>
-                                @title_basics.genres
+                                @title_basics.genres.getOrElse { <em>-</em> }
+                            </td>
+                            <td>
+                                @title_ratings.map(_.averageRating).getOrElse { <em>-</em> }
                             </td>
                         </tr>
                     }

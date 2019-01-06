@@ -28,23 +28,18 @@ object Title {
 /**
   * Helper for pagination.
   */
-case class Page2[A](items: Seq[A], page: Int, offset: Long, total: Long) {
+case class Page[A](items: Seq[A], page: Int, offset: Long, total: Long) {
   lazy val prev = Option(page - 1).filter(_ >= 0)
   lazy val next = Option(page + 1).filter(_ => (offset + items.size) < total)
 }
 
 @javax.inject.Singleton
-class TitleRepository @Inject()(dbapi: DBApi)(implicit ec: DatabaseExecutionContext) {
+class TitleRepository @Inject()(dbapi: DBApi, ratingRepository: RatingRepository, principalsRepository: PrincipalsRepository)(implicit ec: DatabaseExecutionContext) {
 
   private val logger = play.api.Logger(this.getClass)
   private val db = dbapi.database("default")
 
-  // -- Parsers
-
-  /**
-    * Parse a Computer from a ResultSet
-    */
-  private val simple1 = {
+  private val simple = {
     get[Option[String]]("title_basics.tconst") ~
       get[String]("title_basics.titleType") ~
       get[String]("title_basics.primaryTitle") ~
@@ -59,26 +54,18 @@ class TitleRepository @Inject()(dbapi: DBApi)(implicit ec: DatabaseExecutionCont
     }
   }
 
-  // -- Queries
+  private val withRating = simple ~ (ratingRepository.simple.?) map {
+    case title_basics ~ title_ratings => title_basics -> title_ratings
+  }
 
-  /**
-    * Retrieve a title from the identifier.
-    */
   def findById(tconst: String): Future[Option[Title]] = Future {
     db.withConnection { implicit connection =>
-      SQL"select * from title_basics where tconst = $tconst".as(simple1.singleOpt)
+      SQL"select * from title_basics where tconst = $tconst".as(simple.singleOpt)
     }
   }(ec)
 
-  /**
-    * Return a page of (Computer,Company).
-    *
-    * @param page Page to display
-    * @param pageSize Number of computers per page
-    * @param orderBy Computer property used for sorting
-    * @param filter Filter applied on the name column
-    */
-  def list(page: Int = 0, pageSize: Int = 10, orderBy: Int = 1, filterPrimary: String = "%", filterOriginal: String = "%"): Future[Page2[(Title)]] = Future {
+
+  def list(page: Int = 0, pageSize: Int = 10, orderBy: Int = 1, filterPrimary: String = "%", filterOriginal: String = "%"): Future[Page[(Title, Option[Rating])]] = Future {
     logger.trace("mpika kai kanw query twra")
     val offset = pageSize * page
 
@@ -86,36 +73,32 @@ class TitleRepository @Inject()(dbapi: DBApi)(implicit ec: DatabaseExecutionCont
       logger.trace("mpika kai kanw query twra")
       val titles = SQL"""
         select * from title_basics
+        left join title_ratings on title_basics.tconst = title_ratings.tconst
         where title_basics.primaryTitle like ${filterPrimary}
         order by ${orderBy} nulls last
         limit ${pageSize} offset ${offset}
-      """.as(simple1.*)
+      """.as(withRating.*)
 
       println("title",titles)
 
       val totalRows = SQL"""
         select count(*) from title_basics
+        left join title_ratings on title_basics.tconst = title_ratings.tconst
         where title_basics.primaryTitle like ${filterPrimary}
       """.as(scalar[Long].single)
       println("totalRows",totalRows)
-      Page2(titles, page, offset, totalRows)
+      Page(titles, page, offset, totalRows)
     }
   }(ec)
 
 
-  /**
-    * Construct the Seq[(String,String)] needed to fill a select options set.
-    *
-    * Uses `SqlQueryResult.fold` from Anorm streaming,
-    * to accumulate the rows as an options list.
-    */
   def options(tconst: String): Future[Seq[(String,String)]] = Future(db.withConnection { implicit connection =>
     println(tconst)
     println("mpika stin options")
     SQL"select * from title_basics where title_basics.tconst like ${tconst}".
       fold(Seq.empty[(String, String)], ColumnAliaser.empty) { (acc, row) => // Anorm streaming
         println("mpika stin options fold")
-        row.as(simple1) match {
+        row.as(simple) match {
           case Failure(parseErr) => {
             println(s"Fails to parse $row: $parseErr")
             acc

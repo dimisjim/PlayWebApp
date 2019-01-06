@@ -4,6 +4,8 @@
 
 COPY title_basics FROM '/home/jim/dimisjim/PlayWebApp/datasets/title.basics.tsv' DELIMITER E'\t';
 
+COPY title_crew FROM '/home/jim/dimisjim/PlayWebApp/datasets/title.crew.tsv' DELIMITER E'\t';
+
 COPY title_principals FROM '/home/jim/dimisjim/PlayWebApp/datasets/title.principals.tsv' DELIMITER E'\t';
 
 COPY title_ratings FROM '/home/jim/dimisjim/PlayWebApp/datasets/title.ratings.tsv' DELIMITER E'\t';
@@ -11,6 +13,8 @@ COPY title_ratings FROM '/home/jim/dimisjim/PlayWebApp/datasets/title.ratings.ts
 # --- !Downs
 
 DELETE FROM title_basics;
+
+DELETE FROM title_crew;
 
 DELETE FROM title_principals;
 

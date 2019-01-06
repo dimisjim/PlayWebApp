@@ -1,4 +1,4 @@
-@(tconst: String, titleForm: Form[Title], companies : Seq[(String, String)])(implicit requestHeader: MessagesRequestHeader)
+@(tconst: String, titleForm: Form[Title], ratingForm: Form[Rating], crewForm: Form[Crew])(implicit requestHeader: MessagesRequestHeader)
 
 @import views.html.helper._
 
@@ -18,6 +18,10 @@
     @inputText(titleForm("endYear"), '_label -> "End Year", '_help -> "")
     @inputText(titleForm("runtimeMinutes"), '_label -> "Runtime Minutes", '_help -> "")
     @inputText(titleForm("genres"), '_label -> "Genres", '_help -> "")
+    @inputText(ratingForm("averageRating"), '_label -> "Rating", '_help -> "")
+    @inputText(ratingForm("numVotes"), '_label -> "Number of Votes", '_help -> "")
+    @textarea(crewForm("directors"), '_label -> "Directors", '_help -> "")
+    @textarea(crewForm("writers"), '_label -> "Writers", '_help -> "")
 
 </fieldset>
 
